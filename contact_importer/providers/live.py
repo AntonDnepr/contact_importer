@@ -57,10 +57,19 @@ class LiveContactImporter(BaseProvider):
     def parse_contacts(self, contacts_json):
         contacts_list = json.loads(contacts_json)
         contacts = []
-        for contact in contacts_list['data']:
-            emails = contact['emails']
-            if emails.get('account'):
-                contacts.append(emails['account'])
+        for c_in in contacts_list['data']:
+            contact = {}
+            emails = c_in.pop('emails', {})
+
+            if 'preferred' in emails and '@' in emails['preferred']:
+                contact['email'] = emails['preferred']
+            elif 'emails' in c_in:
+                for k, v in emails.iteritems():
+                    if v and '@' in v:
+                        contact['email'] = v
+
+            contact['first_name'] = c_in.pop('first_name', '')
+            contact['last_name'] = c_in.pop('last_name', '')
+            contacts.append(contact)
+
         return contacts
-
-
