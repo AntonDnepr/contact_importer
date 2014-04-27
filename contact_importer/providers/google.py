@@ -61,9 +61,23 @@ class GoogleContactImporter(BaseProvider):
         contacts = []
         
         for elm in elms:
+            contact = {}
             children = elm.getchildren()
             for child in children:
                 if child.tag == "{http://schemas.google.com/g/2005}email":
-                    contacts.append(child.attrib.get('address'))
+                    if not 'email' in contact or child.attrib.get('primary'):
+                        contact['email'] = child.attrib.get('address')
+                elif child.tag == "{http://schemas.google.com/g/2005}phoneNumber":
+                    if not 'phone' in contact:
+                        contact['phone'] = "".join([x for x in child.itertext()])
+                elif child.tag == "{http://schemas.google.com/g/2005}name":
+                    for namechild in child.getchildren():
+                        if namechild.tag == "{http://schemas.google.com/g/2005}fullName":
+                            contact['full_name'] = "".join([x for x in namechild.itertext()])
+                        elif namechild.tag == "{http://schemas.google.com/g/2005}givenName":
+                            contact['first_name'] = "".join([x for x in namechild.itertext()])
+                        elif namechild.tag == "{http://schemas.google.com/g/2005}familyName":
+                            contact['last_name'] = "".join([x for x in namechild.itertext()])
+            contacts.append(contact)
 
         return contacts
