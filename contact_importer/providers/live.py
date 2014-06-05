@@ -61,7 +61,7 @@ class LiveContactImporter(BaseProvider):
             contact = {}
             emails = c_in.pop('emails', {})
 
-            if 'preferred' in emails and '@' in emails['preferred']:
+            if emails and 'preferred' in emails and '@' in emails['preferred']:
                 contact['email'] = emails['preferred']
             elif 'emails' in c_in:
                 for k, v in emails.iteritems():
