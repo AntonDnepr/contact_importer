@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """ Live Contact Importer module """
+from datetime import date
 
 from .base import BaseProvider
 from urllib import urlencode
@@ -61,15 +62,31 @@ class LiveContactImporter(BaseProvider):
             contact = {}
             emails = c_in.pop('emails', {})
 
+            # emails is object with adresses http://msdn.microsoft.com/en-us/library/hh243646.aspx#wlemails
+            # Set preferred email address
             if emails and 'preferred' in emails and emails['preferred'] and '@' in emails['preferred']:
                 contact['email'] = emails['preferred']
-            elif 'emails' in c_in:
-                for k, v in emails.iteritems():
-                    if v and '@' in v:
-                        contact['email'] = v
 
+            # Provide all existing email fields
+            if 'emails' in c_in:
+                # for every type
+                for k, v in emails.iteritems():
+                    # if v is not empty and have @ inside
+                    if v and '@' in v:
+                        # if standard email is not set yet
+                        if not contact.get('email'):
+                            # set it
+                            contact['email'] = v
+                        # fill "special" emails
+                        contact['%s_email' % k] = v
+
+            contact['name'] = c_in.pop('name', '')
             contact['first_name'] = c_in.pop('first_name', '')
             contact['last_name'] = c_in.pop('last_name', '')
+            # New contact have:
+            # name, first_name, last_name, email
+            # Can have (you must check if they really exist):
+            # preferred_email, account_email, personal_email, business_email
             contacts.append(contact)
 
         return contacts
