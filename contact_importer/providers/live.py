@@ -93,6 +93,74 @@ class LiveContactImporter(BaseProvider):
                     day=c_in.pop('birth_day'),
                 )
 
+            # addresses is dump of two wl.postaladresses objects "personal" and "business"
+            # (docs addrs: http://msdn.microsoft.com/en-us/library/hh243646.aspx#wlpostaladdresses)
+            addresses = c_in.pop('addresses', {})
+
+            # If we got any addresses
+            if addresses:
+                # we will try proccess first business
+                business = addresses.pop('business', {})
+                # but only if it exist
+                # TODO: Change this "if" into extractor function
+                if business:
+                    # if street exists and have value
+                    if 'street' in business and business['street']:
+                        # make street
+                        contact['addr_street'] = business.pop('street')
+                        # if street_2 exists and have value
+                        if 'street_2' in business and business['street_2']:
+                            # we pack two fields into one universal
+                            contact['addr_street'] = "%s\n%s" % (contact['addr_street'], business.pop('street_2'))
+                    # TODO: Change it into loop and map
+                    # if city exists and have value
+                    if 'city' in business and business['city']:
+                        # just fill our field by it
+                        contact['addr_city'] = business.pop('city')
+                    # if state exists and have value
+                    if 'state' in business and business['state']:
+                        # just fill our field by it
+                        contact['addr_state'] = business.pop('state')
+                    # if postal_code exists and have value
+                    if 'postal_code' in business and business['postal_code']:
+                        # just fill our field by it
+                        contact['addr_post_code'] = business.pop('postal_code')
+                    # if region exists and have value
+                    if 'region' in business and business['region']:
+                        # just fill our field by it, in interface it's translated to region/country
+                        contact['addr_country'] = business.pop('region')
+
+                # we will try proccess personal
+                personal = addresses.pop('personal', {})
+                # but only if it exist
+                # TODO: Change this "if" into extractor function
+                if personal:
+                    # if street exists and have value
+                    if 'street' in personal and personal['street']:
+                        # make street
+                        contact['addr_private_street'] = personal.pop('street')
+                        # if street_2 exists and have value
+                        if 'street_2' in personal and personal['street_2']:
+                            # we pack two fields into one universal
+                            contact['addr_private_street'] = "%s\n%s" % (contact['addr_private_street'], personal.pop('street_2'))
+                    # TODO: Change it into loop and map
+                    # if city exists and have value
+                    if 'city' in personal and personal['city']:
+                        # just fill our field by it
+                        contact['addr_private_city'] = personal.pop('city')
+                    # if state exists and have value
+                    if 'state' in personal and personal['state']:
+                        # just fill our field by it
+                        contact['addr_private_state'] = personal.pop('state')
+                    # if postal_code exists and have value
+                    if 'postal_code' in personal and personal['postal_code']:
+                        # just fill our field by it
+                        contact['addr_private_post_code'] = personal.pop('postal_code')
+                    # if region exists and have value
+                    if 'region' in personal and personal['region']:
+                        # just fill our field by it, in interface it's translated to region/country
+                        contact['addr_private_country'] = personal.pop('region')
+
             contact['name'] = c_in.pop('name', '')
             contact['first_name'] = c_in.pop('first_name', '')
             contact['last_name'] = c_in.pop('last_name', '')
