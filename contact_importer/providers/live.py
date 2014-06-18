@@ -191,6 +191,7 @@ class LiveContactImporter(BaseProvider):
             # addr_street, addr_city, addr_state, addr_post_code, addr_country (strings)
             # addr_private_street, addr_private_city, addr_private_state, (strings)
             # addr_private_post_code, addr_private_country (strings)
+            # phone_private, phone, phone_mobile (strings)
             contacts.append(contact)
 
         return contacts
