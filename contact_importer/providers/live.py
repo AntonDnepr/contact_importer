@@ -14,7 +14,6 @@ CONTACTS_URL = "https://apis.live.net/v5.0/me/contacts?access_token=%s&limit=100
 
 
 class LiveContactImporter(BaseProvider):
-
     def __init__(self, *args, **kwargs):
         super(LiveContactImporter, self).__init__(*args, **kwargs)
         self.auth_url = AUTH_URL
@@ -33,10 +32,10 @@ class LiveContactImporter(BaseProvider):
 
     def request_access_token(self, code):
         access_token_params = {
-            "code" : code,
-            "client_id" : self.client_id,
-            "client_secret" : self.client_secret,
-            "redirect_uri" : self.redirect_url,
+            "code": code,
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "redirect_uri": self.redirect_url,
             "grant_type": "authorization_code",
         }
 
@@ -58,20 +57,24 @@ class LiveContactImporter(BaseProvider):
     def parse_contacts(self, contacts_json):
         contacts_list = json.loads(contacts_json)
         contacts = []
+        # c_in is dump of user object
+        # (doc addr: http://msdn.microsoft.com/en-us/library/hh243648.aspx#user)
         for c_in in contacts_list['data']:
             contact = {}
+
+            # emails is a dump of wl.emails object
+            # (dregionoc addr: http://msdn.microsoft.com/en-us/library/hh243646.aspx#wlemails)
             emails = c_in.pop('emails', {})
 
-            # emails is object with adresses http://msdn.microsoft.com/en-us/library/hh243646.aspx#wlemails
             # Set preferred email address
             if emails and 'preferred' in emails and emails['preferred'] and '@' in emails['preferred']:
                 contact['email'] = emails['preferred']
 
-            # Provide all existing email fields
-            if 'emails' in c_in:
+            # Provide all existing email fields if they're provided
+            if emails:
                 # for every type
                 for k, v in emails.iteritems():
-                    # if v is not empty and have @ inside
+                    # if v have value and have @ inside
                     if v and '@' in v:
                         # if standard email is not set yet
                         if not contact.get('email'):
@@ -82,7 +85,7 @@ class LiveContactImporter(BaseProvider):
 
             # if there are birth_day, birth_month and birth_year and they are not empty
             if 'birth_day' in c_in and c_in['birth_day'] and 'birth_month' in c_in and c_in['birth_month'] \
-                and 'birth_year' in c_in and c_in['birth_year']:
+                    and 'birth_year' in c_in and c_in['birth_year']:
                 # create birth date
                 contact['birth_date'] = date(
                     year=c_in.pop('birth_year'),
