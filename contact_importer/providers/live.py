@@ -58,12 +58,44 @@ class LiveContactImporter(BaseProvider):
         contacts_list = json.loads(contacts_json)
         contacts = []
         # c_in is dump of user object
-        # (doc addr: http://msdn.microsoft.com/en-us/library/hh243648.aspx#user)
+        # (doc addr: http://msdn.microsoft.com/en-us/library/hh243648.aspx#user )
         for c_in in contacts_list['data']:
             contact = {}
 
+            # First basic fields
+            contact['name'] = c_in.pop('name', '')
+            contact['first_name'] = c_in.pop('first_name', '')
+            contact['last_name'] = c_in.pop('last_name', '')
+
+            # work is dump of wl.workprofile object
+            # ( doc addr: http://msdn.microsoft.com/en-us/library/hh243646.aspx#wlworkprofile )
+            work = c_in.pop('work', '')
+
+            # If we got any work
+            if work:
+                # this should be an array, but we never meet it have more than one object
+                # and you can not add more than one company name or work position name
+                # in https://people.live.com/
+                work = work[0]
+
+                employer = work.pop('employer', {})
+                # if we got employer in work
+                if employer:
+                    name = employer.pop('name', {})
+                    # we should got name too, but we don't trust external api
+                    if name:
+                        contact['company'] = name
+                position = work.pop('position', {})
+                # if we got position in work
+                if position:
+                    name = position.pop('name', {})
+                    # we should got name too, but we don't trust external api
+                    if name:
+                        contact['title'] = name
+
+
             # emails is a dump of wl.emails object
-            # (dregionoc addr: http://msdn.microsoft.com/en-us/library/hh243646.aspx#wlemails)
+            # (dregionoc addr: http://msdn.microsoft.com/en-us/library/hh243646.aspx#wlemails )
             emails = c_in.pop('emails', {})
 
             # Set preferred email address
@@ -94,7 +126,7 @@ class LiveContactImporter(BaseProvider):
                 )
 
             # addresses is dump of two wl.postaladresses objects "personal" and "business"
-            # (docs addrs: http://msdn.microsoft.com/en-us/library/hh243646.aspx#wlpostaladdresses)
+            # (docs addrs: http://msdn.microsoft.com/en-us/library/hh243646.aspx#wlpostaladdresses )
             addresses = c_in.pop('addresses', {})
 
             # If we got any addresses
@@ -162,7 +194,7 @@ class LiveContactImporter(BaseProvider):
                         contact['addr_private_country'] = personal.pop('region')
 
             # phones is dump of wl.phone_numbers object: three strings personal, business, mobile
-            # (docs addrs: http://msdn.microsoft.com/en-us/library/hh243646.aspx#wlphone_numbers)
+            # (docs addrs: http://msdn.microsoft.com/en-us/library/hh243646.aspx#wlphone_numbers )
             phones = c_in.pop('phones', {})
 
             # If we got any phones
@@ -180,9 +212,6 @@ class LiveContactImporter(BaseProvider):
                     # just fill our field by it
                     contact['phone_mobile'] = phones.pop('mobile')
 
-            contact['name'] = c_in.pop('name', '')
-            contact['first_name'] = c_in.pop('first_name', '')
-            contact['last_name'] = c_in.pop('last_name', '')
             # New contact have:
             # name, first_name, last_name, email (strings)
             # Can have (you must check if they really exist):
@@ -192,6 +221,7 @@ class LiveContactImporter(BaseProvider):
             # addr_private_street, addr_private_city, addr_private_state, (strings)
             # addr_private_post_code, addr_private_country (strings)
             # phone_private, phone, phone_mobile (strings)
+            # company, title (strings)
             contacts.append(contact)
 
         return contacts
