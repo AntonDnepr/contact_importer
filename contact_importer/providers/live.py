@@ -161,6 +161,25 @@ class LiveContactImporter(BaseProvider):
                         # just fill our field by it, in interface it's translated to region/country
                         contact['addr_private_country'] = personal.pop('region')
 
+            # phones is dump of wl.phone_numbers object: three strings personal, business, mobile
+            # (docs addrs: http://msdn.microsoft.com/en-us/library/hh243646.aspx#wlphone_numbers)
+            phones = c_in.pop('phones', {})
+
+            # If we got any phones
+            if phones:
+                # if personal exists and have value
+                if 'personal' in phones and phones['personal']:
+                    # just fill our field by it
+                    contact['phone_private'] = phones.pop('personal')
+                # if business exists and have value
+                if 'business' in phones and phones['business']:
+                    # just fill our field by it
+                    contact['phone'] = phones.pop('business')
+                # if personal exists and have value
+                if 'mobile' in phones and phones['mobile']:
+                    # just fill our field by it
+                    contact['phone_mobile'] = phones.pop('mobile')
+
             contact['name'] = c_in.pop('name', '')
             contact['first_name'] = c_in.pop('first_name', '')
             contact['last_name'] = c_in.pop('last_name', '')
@@ -169,6 +188,9 @@ class LiveContactImporter(BaseProvider):
             # Can have (you must check if they really exist):
             # preferred_email, account_email, personal_email, business_email (strings)
             # birth_day (datetime.date)
+            # addr_street, addr_city, addr_state, addr_post_code, addr_country (strings)
+            # addr_private_street, addr_private_city, addr_private_state, (strings)
+            # addr_private_post_code, addr_private_country (strings)
             contacts.append(contact)
 
         return contacts
