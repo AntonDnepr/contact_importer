@@ -113,7 +113,7 @@ class LiveContactImporter(BaseProvider):
                             # set it
                             contact['email'] = v
                         # fill "special" emails
-                        contact['%s_email' % k] = v
+                        contact['email_%s' % k] = v
 
             # if there are birth_day, birth_month and birth_year and they are not empty
             if 'birth_day' in c_in and c_in['birth_day'] and 'birth_month' in c_in and c_in['birth_month'] \
@@ -215,7 +215,7 @@ class LiveContactImporter(BaseProvider):
             # New contact have:
             # name, first_name, last_name, email (strings)
             # Can have (you must check if they really exist):
-            # preferred_email, account_email, personal_email, business_email (strings)
+            # email_preferred, email_account, email_personal, email_business (strings)
             # birth_day (datetime.date)
             # addr_street, addr_city, addr_state, addr_post_code, addr_country (strings)
             # addr_private_street, addr_private_city, addr_private_state, (strings)
