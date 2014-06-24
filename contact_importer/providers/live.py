@@ -62,6 +62,8 @@ class LiveContactImporter(BaseProvider):
         for c_in in contacts_list['data']:
             contact = {}
 
+            contact['raw'] = c_in
+
             # First basic fields
             contact['name'] = c_in.pop('name', '')
             contact['first_name'] = c_in.pop('first_name', '')
@@ -222,6 +224,7 @@ class LiveContactImporter(BaseProvider):
             # addr_private_post_code, addr_private_country (strings)
             # phone_private, phone, phone_mobile (strings)
             # company, title (strings)
+            # raw (string)
             contacts.append(contact)
 
         return contacts
