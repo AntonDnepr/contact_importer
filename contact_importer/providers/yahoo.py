@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """ Yahoo Contact Importer module """
+import datetime
 
 from .base import BaseProvider
 from ..lib import oauth1 as oauth
@@ -102,16 +103,52 @@ class YahooContactImporter(BaseProvider):
         contacts_list = []
 
         for contact in contacts['contacts']['contact']:
-            contact_type = contact['fields'][0]['type']
-            contact_value = contact['fields'][0]['value']
+            parsed_contact = {}
+            for field in contact['fields']:
+                field_type = field['type']
+                field_value = field['value']
 
-            if contact_type == "name":
-                continue
+                if field_type == "name" and field_value:
+                    parsed_contact['last_name'] = field_value.get('familyName', '')
+                    parsed_contact['first_name'] = field_value.get('givenName', '')
 
-            if contact_type == "yahooid" and not "@" in contact_value:
-                contact_value += "@yahoo.com"
-            
-            contacts_list.append(contact_value)
+                if field_type == "note" and field_value:
+                    parsed_contact['notes'] = field_value
+
+                try:
+                    if field_type == "birthday" and field_value:
+                        day = int(field_value['day'])
+                        month = int(field_value['month'])
+                        year = int(field_value['year'])
+                        parsed_contact["birthday"] = datetime.datetime(year=year, month=month, day=day)
+                except ValueError:
+                    # This can happend, do no stop importing procedure.
+                    pass
+                except TypeError:
+                    # This can happend, do no stop importing procedure.
+                    pass
+
+                if field_type == "email" and field_value:
+                    parsed_contact['email'] = field_value
+
+                if field_type == "yahooid" and field_value and not "@" in field_value:
+                    parsed_contact['email'] = field_value + "@yahoo.com"
+
+                if field_type == "phone" and field_value:
+                    parsed_contact['phone'] = field_value
+
+                if field_type == "company" and field_value:
+                    parsed_contact['company'] = field_value
+
+                if field_type == "jobTitle" and field_value:
+                    parsed_contact['title'] = field_value
+
+            if parsed_contact:
+                # New contact have:
+                # first_name, last_name, email (strings)
+                # Can have (you must check if they really exist):
+                # notes, birthday, phone, company
+                contacts_list.append(parsed_contact)
 
         return contacts_list
 
