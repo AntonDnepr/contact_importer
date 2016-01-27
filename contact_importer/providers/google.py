@@ -51,7 +51,7 @@ class GoogleContactImporter(BaseProvider):
             "Authorization": "OAuth %s" % access_token, 
             "GData-Version": "3.0"
         }
-        response = requests.get(CONTACTS_URL, headers=authorization_header)
+        response = requests.get(CONTACTS_URL, headers=authorization_header, verify=False)
         return self.parse_contacts(response.text)
 
     def parse_contacts(self, contacts_xml=None):
