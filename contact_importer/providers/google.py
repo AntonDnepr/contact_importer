@@ -42,7 +42,7 @@ class GoogleContactImporter(BaseProvider):
         content_length = len(urlencode(access_token_params))
         access_token_params['content-length'] = str(content_length)
 
-        response = requests.post(self.token_url, data=access_token_params)
+        response = requests.post(self.token_url, data=access_token_params, verify=False)
         data = json.loads(response.text)
         return data.get('access_token')
 
